@@ -1,0 +1,30 @@
+# Arquivos de ambiente (contém sua API Key!)
+.env
+
+# Arquivos gerados pelo Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ambientes virtuais (se você usar um na pasta do projeto)
+venv/
+.venv/
+env/
+ENV/
+# Ou qualquer nome que você deu ao seu ambiente virtual
+
+# Arquivos específicos do VS Code (opcional, mas comum)
+.vscode/
+
+# Arquivos de dados CSV gerados (se você não quiser versioná-los)
+# Se você QUER incluir os CSVs no GitHub como exemplo, REMOVA as linhas abaixo.
+# Se os CSVs forem muito grandes ou contiverem dados sensíveis, NÃO os inclua.
+# *.csv
+
+# Arquivos específicos do sistema operacional
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+# Logs
+*.log

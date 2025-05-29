@@ -1,0 +1,51 @@
+campaign_id,campaign_name,campaign_start_date,campaign_end_date,campaign_objective,campaign_type,channel_source_primary,campaign_budget,campaign_spend,target_audience_segment
+CAMP0001,Q3_2022 Webinar - facilitate-integrated-eyeballs,2022-02-17,,Sales,Webinar,Webinar Platform,13608.58,11374.48,Engineers - Material Selection
+CAMP0002,Q1_2024 Email Drip - transition-strategic-interfaces,2024-09-13,2025-04-12,Supplier Acquisition,Email Drip,Email,8800.8,6959.59,Aerospace Buyers
+CAMP0003,Q4_2022 Content Marketing - unleash-global-applications,2022-10-20,2024-01-24,Supplier Acquisition,Content Marketing,SEO,7137.69,6514.57,Small CNC Shops US
+CAMP0004,Q2_2022 Paid Social - productize-24/7-communities,2022-09-03,2025-08-25,Engagement,Paid Social,LinkedIn Ads,15155.57,11298.7,Small CNC Shops US
+CAMP0005,Q2_2024 Partnership - architect-user-centric-functionalities,2024-03-01,2024-11-12,Engagement,Partnership,Referral Partner Site,8942.89,6626.9,Industrial Procurement Managers
+CAMP0006,Q3_2024 Partnership - harness-integrated-functionalities,2024-08-20,2024-10-12,Engagement,Partnership,Referral Partner Site,14781.46,13338.44,Industrial Procurement Managers
+CAMP0007,Q4_2023 Partnership - repurpose-plug-and-play-paradigms,2023-04-14,2024-07-22,Lead Generation,Partnership,Referral Partner Site,9869.26,7664.29,Small CNC Shops US
+CAMP0008,Q2_2022 Display Ads - innovate-next-generation-infrastructures,2022-10-13,2024-01-02,Engagement,Display Ads,Google Display Network,14416.01,12326.24,Aerospace Buyers
+CAMP0009,Q3_2023 Paid Social - disintermediate-turn-key-synergies,2023-06-09,,Supplier Acquisition,Paid Social,LinkedIn Ads,16742.81,15134.61,Industrial Procurement Managers
+CAMP0010,Q1_2024 Display Ads - implement-magnetic-platforms,2024-01-05,2024-06-01,Supplier Acquisition,Display Ads,Google Display Network,10238.27,8659.28,Industrial Procurement Managers
+CAMP0011,Q3_2023 Display Ads - architect-dynamic-schemas,2023-07-05,2024-05-17,Sales,Display Ads,Google Display Network,10533.88,9643.35,Industrial Procurement Managers
+CAMP0012,Q4_2024 Email Drip - e-enable-efficient-web-readiness,2024-09-29,2025-03-04,Sales,Email Drip,Email,1944.68,1671.25,Engineers - Material Selection
+CAMP0013,Q4_2022 Content Marketing - deliver-impactful-metrics,2022-02-23,,Engagement,Content Marketing,SEO,19267.21,15751.75,Small CNC Shops US
+CAMP0014,Q3_2022 Display Ads - leverage-open-source-infrastructures,2022-04-19,,Supplier Acquisition,Display Ads,Google Display Network,4423.43,3765.32,Aerospace Buyers
+CAMP0015,Q1_2023 Email Drip - strategize-bricks-and-clicks-eyeballs,2023-03-15,2025-01-12,Lead Generation,Email Drip,Email,1336.21,1236.74,Small CNC Shops US
+CAMP0016,Q1_2024 Content Marketing - iterate-revolutionary-paradigms,2024-12-27,2025-07-23,Engagement,Content Marketing,SEO,11153.72,7741.34,Aerospace Buyers
+CAMP0017,Q3_2022 Display Ads - engineer-intuitive-experiences,2022-12-12,2023-07-28,Engagement,Display Ads,Google Display Network,10053.41,9671.67,General Manufacturing LATAM
+CAMP0018,Q2_2024 Webinar - e-enable-customized-architectures,2024-12-21,,Sales,Webinar,Webinar Platform,17768.87,5860.36,Industrial Procurement Managers
+CAMP0019,Q1_2024 Paid Social - strategize-open-source-web-services,2024-11-21,2025-02-24,Lead Generation,Paid Social,LinkedIn Ads,6038.13,4988.99,Engineers - Material Selection
+CAMP0020,Q4_2024 Paid Search - brand-interactive-models,2024-01-14,2025-03-31,Supplier Acquisition,Paid Search,Google Ads,12091.07,10766.49,Aerospace Buyers
+CAMP0021,Q2_2024 Partnership - visualize-impactful-paradigms,2024-01-01,2025-09-14,Sales,Partnership,Referral Partner Site,1889.05,1240.4,Engineers - Material Selection
+CAMP0022,Q2_2022 Content Marketing - re-intermediate-sticky-systems,2022-09-21,2024-08-29,Engagement,Content Marketing,SEO,6232.56,4599.01,Aerospace Buyers
+CAMP0023,Q1_2024 Email Drip - scale-scalable-functionalities,2024-06-24,,Supplier Acquisition,Email Drip,Email,14469.86,11097.59,General Manufacturing LATAM
+CAMP0024,Q1_2025 Webinar - drive-front-end-e-tailers,2025-04-08,2025-05-21,Lead Generation,Webinar,Webinar Platform,8760.49,8334.55,Small CNC Shops US
+CAMP0025,Q2_2022 Partnership - innovate-24/365-users,2022-04-24,2024-11-08,Engagement,Partnership,Referral Partner Site,12679.84,11281.16,Industrial Procurement Managers
+CAMP0026,Q3_2023 Paid Social - empower-plug-and-play-bandwidth,2023-07-06,2023-08-20,Sales,Paid Social,LinkedIn Ads,17033.72,12069.46,Small CNC Shops US
+CAMP0027,Q2_2024 Webinar - repurpose-clicks-and-mortar-partnerships,2024-06-18,2025-02-18,Engagement,Webinar,Webinar Platform,7804.99,6401.32,General Manufacturing LATAM
+CAMP0028,Q1_2022 Email Drip - brand-24/7-partnerships,2022-03-23,2023-06-28,Engagement,Email Drip,Email,14700.89,10355.61,Industrial Procurement Managers
+CAMP0029,Q4_2023 Content Marketing - productize-innovative-relationships,2023-10-06,2024-09-30,Engagement,Content Marketing,SEO,10127.86,8183.49,Aerospace Buyers
+CAMP0030,Q2_2023 Content Marketing - re-intermediate-cutting-edge-channels,2023-02-13,,Supplier Acquisition,Content Marketing,SEO,4158.6,3689.31,Small CNC Shops US
+CAMP0031,Q2_2024 Paid Search - engage-user-centric-e-markets,2024-11-09,2024-12-27,Sales,Paid Search,Google Ads,6276.04,4686.94,Industrial Procurement Managers
+CAMP0032,Q2_2023 Display Ads - envisioneer-cutting-edge-web-readiness,2023-09-04,2025-10-22,Supplier Acquisition,Display Ads,Google Display Network,12625.47,8399.18,General Manufacturing LATAM
+CAMP0033,Q4_2023 Partnership - implement-frictionless-markets,2023-02-23,2025-01-15,Supplier Acquisition,Partnership,Referral Partner Site,16389.99,11760.42,Aerospace Buyers
+CAMP0034,Q3_2022 Display Ads - streamline-24/7-methodologies,2022-12-23,2024-10-31,Lead Generation,Display Ads,Google Display Network,12237.65,11058.57,Engineers - Material Selection
+CAMP0035,Q2_2024 Paid Social - incubate-revolutionary-models,2024-05-01,2025-01-28,Lead Generation,Paid Social,LinkedIn Ads,7595.1,7441.75,Small CNC Shops US
+CAMP0036,Q3_2024 Webinar - reinvent-transparent-e-services,2024-08-03,,Sales,Webinar,Webinar Platform,18261.18,11242.2,General Manufacturing LATAM
+CAMP0037,Q4_2024 Content Marketing - disintermediate-magnetic-bandwidth,2024-01-06,2024-09-27,Lead Generation,Content Marketing,SEO,18480.79,18415.76,Engineers - Material Selection
+CAMP0038,Q2_2022 Paid Social - mesh-robust-e-commerce,2022-07-17,,Sales,Paid Social,LinkedIn Ads,706.01,689.32,General Manufacturing LATAM
+CAMP0039,Q4_2022 Webinar - synthesize-cutting-edge-technologies,2022-01-27,,Brand Awareness,Webinar,Webinar Platform,12838.07,9142.15,Engineers - Material Selection
+CAMP0040,Q1_2025 Paid Search - deploy-sticky-e-business,2025-01-13,2025-07-20,Supplier Acquisition,Paid Search,Google Ads,4785.32,3138.33,Small CNC Shops US
+CAMP0041,Q3_2023 Content Marketing - synergize-strategic-markets,2023-12-29,2024-09-27,Sales,Content Marketing,SEO,17675.89,16797.89,Aerospace Buyers
+CAMP0042,Q3_2022 Content Marketing - leverage-customized-niches,2022-08-15,2025-02-01,Brand Awareness,Content Marketing,SEO,6110.72,6054.78,Aerospace Buyers
+CAMP0043,Q4_2023 Paid Social - reinvent-cross-platform-communities,2023-07-23,,Brand Awareness,Paid Social,LinkedIn Ads,6385.45,4880.88,General Manufacturing LATAM
+CAMP0044,Q4_2024 Paid Search - empower-virtual-eyeballs,2024-03-14,,Brand Awareness,Paid Search,Google Ads,15382.99,11321.7,Aerospace Buyers
+CAMP0045,Q3_2023 Email Drip - drive-24/7-web-readiness,2023-04-08,2025-05-15,Lead Generation,Email Drip,Email,3666.9,2749.95,Engineers - Material Selection
+CAMP0046,Q3_2022 Email Drip - visualize-proactive-ROI,2022-02-02,2023-07-06,Supplier Acquisition,Email Drip,Email,18075.96,15794.16,Industrial Procurement Managers
+CAMP0047,Q2_2023 Paid Search - unleash-virtual-methodologies,2023-10-31,2025-06-18,Brand Awareness,Paid Search,Google Ads,3484.11,2892.12,General Manufacturing LATAM
+CAMP0048,Q4_2022 Webinar - grow-extensible-ROI,2022-07-04,2024-01-22,Lead Generation,Webinar,Webinar Platform,1121.78,865.8,Engineers - Material Selection
+CAMP0049,Q3_2022 Paid Search - transition-turn-key-schemas,2022-11-17,2023-01-08,Brand Awareness,Paid Search,Google Ads,8916.06,7313.25,Small CNC Shops US
+CAMP0050,Q4_2024 Paid Search - orchestrate-frictionless-metrics,2024-06-09,2025-07-03,Lead Generation,Paid Search,Google Ads,8569.37,6119.87,Aerospace Buyers
