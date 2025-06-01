@@ -16,18 +16,18 @@ This portfolio project demonstrates a comprehensive, end-to-end business intelli
 ---
 
 ## Table of Contents
-1.  [Project Overview](#project-overview)
-2.  [Key Skills Demonstrated](#key-skills-demonstrated)
-3.  [Technical Stack](#technical-stack)
-4.  [Dashboard Showcase & Features](#dashboard-showcase--features)
+1.  [Project Overview](#1-project-overview)
+2.  [Key Skills Demonstrated](#2-key-skills-demonstrated)
+3.  [Technical Stack](#3-technical-stack)
+4.  [Dashboard Showcase & Features](#4-dashboard-showcase--features)
     *   [4.1 Home / Overview Page](#41-home--overview-page)
     *   [4.2 User Funnel Page](#42-user-funnel-page)
     *   [4.3 User Feedback Page](#43-user-feedback-page)
     *   [4.4 Supplier Info / Commodities Page](#44-supplier-info--commodities-page)
-5.  [Project Structure](#project-structure)
-6.  [Setup & Usage](#setup--usage)
-7.  [AI-Powered Insights Examples](#ai-powered-insights-examples)
-8.  [Contact](#contact)
+5.  [Project Structure](#5-project-structure)
+6.  [Setup & Usage](#6-setup--usage)
+7.  [AI-Powered Insights Examples](#7-ai-powered-insights-examples)
+8.  [Contact](#8-contact)
 
 ---
 
