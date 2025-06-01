@@ -1,230 +1,275 @@
 import pandas as pd
-import google.generativeai as genai
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import nltk
 import os
 from dotenv import load_dotenv
-import time # Para adicionar delays e respeitar rate limits
-import json # Para parsear o JSON da resposta, se necessário no Python
-import re # Para limpeza de JSON
+import time
+import json
+import re
 
-# Carregar variáveis de ambiente do arquivo .env
+# --- NLTK Resource Download ---
+# Tenta baixar os recursos necessários. Se já existirem, não fará nada.
+# É mais robusto do que tentar find() e depois capturar um DownloadError específico
+# que pode ter mudado de nome entre versões do NLTK.
+try:
+    print("Checking/downloading NLTK resources (vader_lexicon, punkt)...")
+    nltk.download('vader_lexicon', quiet=True) # quiet=True suprime a saída se já estiver baixado
+    nltk.download('punkt', quiet=True)
+    print("NLTK resources checked/downloaded.")
+except Exception as e:
+    print(f"An error occurred during NLTK resource download: {e}")
+    print("Please ensure you can connect to the internet to download NLTK resources,")
+    print("or download them manually using: import nltk; nltk.download('vader_lexicon'); nltk.download('punkt')")
+    # Você pode decidir sair aqui se os recursos forem críticos e não puderem ser baixados
+    # exit()
+
+# --- Load environment variables (still useful if you keep Gemini for other tasks) ---
 load_dotenv()
-
-# Configurar a API Key do Gemini
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-if not GOOGLE_API_KEY:
-    raise ValueError("API Key do Google não encontrada. Verifique seu arquivo .env")
-genai.configure(api_key=GOOGLE_API_KEY)
 
-# Configurações do modelo Gemini
-generation_config = {
-    "temperature": 0.6, # Um pouco menos criativo para respostas mais consistentes
-    "top_p": 1,
-    "top_k": 1,
-    "max_output_tokens": 2048,
-}
+# --- VADER Sentiment Analyzer ---
+vader_analyzer = SentimentIntensityAnalyzer()
 
-safety_settings = [
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-]
+# --- Gemini Model Configuration (if still used for other tasks) ---
+USE_GEMINI_FOR_RFQ_AND_CAPABILITIES = True # Set to False to disable Gemini calls
 
-# Certifique-se de usar um modelo que tenha um nível gratuito ou que você tenha configurado faturamento
-# "models/gemini-1.5-flash-latest" é uma boa opção.
-MODEL_NAME = "models/gemini-2.0-flash-lite"
-model = genai.GenerativeModel(
-    model_name=MODEL_NAME,
-    generation_config=generation_config,
-    safety_settings=safety_settings
-)
-print(f"Usando o modelo Gemini: {MODEL_NAME}")
-
-def clean_gemini_json_response(text_response):
-    if not text_response:
-        return "{}"
-
-    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text_response, re.DOTALL)
-    if match:
-        json_str = match.group(1)
+if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+    if not GOOGLE_API_KEY:
+        print("Warning: Google API Key not found, but USE_GEMINI_FOR_RFQ_AND_CAPABILITIES is True.")
+        print("Gemini calls for RFQ and Capabilities will fail. Set USE_GEMINI_FOR_RFQ_AND_CAPABILITIES to False or provide API Key.")
+        # We can let it proceed and Gemini calls will fail gracefully, or exit:
+        # exit()
     else:
-        match_simple = re.search(r'(\{.*?\})', text_response, re.DOTALL)
-        if match_simple:
-            json_str = match_simple.group(1)
-        else:
-            print(f"DEBUG: Resposta do Gemini não parece conter JSON: {text_response[:200]}...")
-            return "{}"
+        import google.generativeai as genai
+        genai.configure(api_key=GOOGLE_API_KEY)
+        generation_config_gemini = {
+            "temperature": 0.5,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 1024,
+        }
+        safety_settings_gemini = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+        ]
+        MODEL_NAME_GEMINI = "models/gemini-2.0-flash-lite"
+        try:
+            gemini_model = genai.GenerativeModel(
+                model_name=MODEL_NAME_GEMINI,
+                generation_config=generation_config_gemini,
+                safety_settings=safety_settings_gemini
+            )
+            print(f"Successfully initialized Gemini model: {MODEL_NAME_GEMINI}")
+        except Exception as e:
+            print(f"Error initializing Gemini model {MODEL_NAME_GEMINI}: {e}")
+            print("Gemini calls for RFQ and Capabilities will likely fail.")
+            USE_GEMINI_FOR_RFQ_AND_CAPABILITIES = False # Disable if model init fails
+
+
+def clean_gemini_json_response(text_response): # Still needed if Gemini is used
+    if not text_response: return "{}"
+    match_markdown = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text_response, re.DOTALL)
+    if match_markdown: json_str = match_markdown.group(1)
+    else:
+        match_direct = re.search(r'(\{.*?\})', text_response, re.DOTALL)
+        if match_direct: json_str = match_direct.group(1)
+        else: return "{}"
     try:
-        json.loads(json_str) # Valida se é JSON
-        return json_str
-    except json.JSONDecodeError:
-        print(f"DEBUG: Conteúdo extraído não é JSON válido após limpeza: {json_str[:200]}...")
+        json.loads(json_str); return json_str
+    except json.JSONDecodeError: return "{}"
+
+def get_gemini_response_with_delay(prompt_text): # Still needed if Gemini is used
+    if not USE_GEMINI_FOR_RFQ_AND_CAPABILITIES or not GOOGLE_API_KEY or 'gemini_model' not in globals():
+        print("DEBUG: Gemini call skipped (not configured or disabled).")
         return "{}"
 
-def get_gemini_response(prompt_text):
     max_retries = 3
-    # Este será o delay em caso de retry por erro
-    initial_retry_delay_seconds = 5 # Pode manter ou ajustar
-
-    # Este será o delay APÓS cada chamada bem-sucedida para controlar o RPM
-    # Para 30 RPM, precisamos de pelo menos 2 segundos entre as chamadas.
-    # Usar 2.1 ou 2.2 para uma pequena margem.
-    DELAY_BETWEEN_CALLS_SECONDS = 2.1 # Ajuste este valor!
-
+    initial_retry_delay_seconds = 5
+    DELAY_BETWEEN_CALLS_SECONDS = 2.1 # For 30 RPM
     current_retry_delay = initial_retry_delay_seconds
 
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(prompt_text)
-
-            # Adiciona o delay APÓS a chamada, antes de retornar
-            # Isso garante que a próxima chamada não aconteça muito rapidamente.
-            time.sleep(DELAY_BETWEEN_CALLS_SECONDS) # <<<< ADICIONADO AQUI
-
+            response = gemini_model.generate_content(prompt_text)
+            time.sleep(DELAY_BETWEEN_CALLS_SECONDS)
             if response.candidates and response.candidates[0].content.parts:
-                cleaned_response = clean_gemini_json_response(response.text)
-                return cleaned_response
-            else:
-                print(f"DEBUG: Resposta do Gemini vazia ou malformada: {response}")
-                # Mesmo com resposta malformada, o delay já ocorreu
-                return "{}"
+                return clean_gemini_json_response(response.text)
+            return "{}"
         except Exception as e:
-            print(f"Erro ao chamar a API do Gemini (tentativa {attempt + 1}/{max_retries}): {e}")
-            if "429" in str(e):
-                print("Erro de Rate Limit (429). Aumentando o delay de retry...")
-                current_retry_delay *= (attempt + 2) # Aumenta o delay de retry
+            print(f"Error calling Gemini API (attempt {attempt + 1}/{max_retries}): {e}")
+            time.sleep(DELAY_BETWEEN_CALLS_SECONDS)
+            if "429" in str(e) or "rate limit" in str(e).lower():
+                current_retry_delay += (attempt + 1) * 2
             if attempt < max_retries - 1:
-                print(f"Aguardando {current_retry_delay:.2f} segundos antes de tentar novamente...")
+                print(f"Waiting {current_retry_delay:.2f} seconds before retrying...")
                 time.sleep(current_retry_delay)
             else:
-                print("Máximo de tentativas atingido. Falha ao obter resposta do Gemini.")
                 return "{}"
 
-# --- Processar user_details.csv ---
-print("Processando user_details.csv...")
+def get_vader_sentiment_analysis(text):
+    if not text or pd.isna(text):
+        # Return a structure consistent with what Gemini was producing for sentiment
+        return {"sentiment": "Not specified", "keywords": [], "vader_compound": 0.0}
+
+    vs = vader_analyzer.polarity_scores(text)
+    compound_score = vs['compound']
+
+    if compound_score >= 0.05:
+        sentiment_label = "Positive"
+    elif compound_score <= -0.05:
+        sentiment_label = "Negative"
+    else:
+        sentiment_label = "Neutral"
+
+    # VADER doesn't do keyword extraction. We'll return an empty list.
+    # For keywords, you might consider TextBlob noun_phrases or a dedicated keyword extractor.
+    return {
+        "sentiment": sentiment_label,
+        "keywords": [], # VADER doesn't provide keywords directly
+        "vader_compound": round(compound_score, 4),
+        "vader_positive": round(vs['pos'], 4),
+        "vader_negative": round(vs['neg'], 4),
+        "vader_neutral": round(vs['neu'], 4)
+    }
+
+# --- Load DataFrames ---
 try:
     df_users = pd.read_csv('user_details.csv')
-except FileNotFoundError:
-    print("Erro: user_details.csv não encontrado. Execute thomas_data.py primeiro.")
-    exit()
-
-df_users['gemini_sentiment_analysis'] = "{}" # Inicializa com JSON vazio
-df_users['gemini_supplier_capability_summary'] = "{}" # Inicializa com JSON vazio
-
-# Ajuste SAMPLE_SIZE_USERS:
-# 0 ou um número grande para processar todos.
-# Um número pequeno para testes rápidos.
-SAMPLE_SIZE_USERS = 0 # Define como 0 para processar todas as linhas elegíveis
-processed_count_users = 0
-total_user_rows_to_process = len(df_users[(df_users['user_feedback_text'].notna()) |
-                                          (df_users['supplier_capabilities_text'].notna() & (df_users['user_type'] == 'Supplier'))])
-print(f"Total de linhas de usuários elegíveis para processamento com Gemini: {total_user_rows_to_process}")
-
-
-for index, row in df_users.iterrows():
-    made_api_call = False
-    if SAMPLE_SIZE_USERS > 0 and processed_count_users >= SAMPLE_SIZE_USERS:
-        print(f"Atingido o limite de amostra de {SAMPLE_SIZE_USERS} para usuários. Interrompendo processamento de usuários.")
-        break
-
-    # 1. Análise de Sentimento do Feedback do Usuário
-    if pd.notna(row['user_feedback_text']):
-        prompt_sentiment = f"""
-        Analyze the following user feedback and classify the predominant sentiment as 'Positive', 'Negative', or 'Neutral'.
-        Also, extract up to 3 keywords or short phrases that summarize the feedback.
-        Provide the response ONLY as a valid JSON object, with no additional text or Markdown formatting before or after.
-        The JSON object must have the following structure:
-        {{
-          "sentiment": "YourSentimentHere (Positive/Negative/Neutral)",
-          "keywords": ["keyword1", "keyword2", "keyword3"]
-        }}
-
-        User feedback: "{row['user_feedback_text']}"
-
-        Respond in English.
-        """
-        print(f"\nAnalyzing feedback for user_id: {row['user_id']} (User {processed_count_users + 1}/{total_user_rows_to_process if SAMPLE_SIZE_USERS == 0 else SAMPLE_SIZE_USERS})...")
-        response_text = get_gemini_response(prompt_sentiment)
-        df_users.at[index, 'gemini_sentiment_analysis'] = response_text
-        made_api_call = True
-
-    # 2. Resumo das Capacidades do Fornecedor
-    if pd.notna(row['supplier_capabilities_text']) and row['user_type'] == 'Supplier':
-        prompt_capabilities = f"""
-        Based on the following list of supplier capabilities, generate a concise summary (1-2 sentences)
-        and identify up to 3 main service categories offered.
-        Provide the response ONLY as a valid JSON object, with no additional text or Markdown formatting before or after.
-        The JSON object must have the following structure:
-        {{
-          "capability_summary": "YourSummaryHere",
-          "main_categories": ["category1", "category2", "category3"]
-        }}
-
-        Supplier capabilities: "{row['supplier_capabilities_text']}"
-
-        Respond in English.
-        """
-        print(f"\nAnalyzing capabilities for supplier_id: {row['user_id']} (User {processed_count_users + 1}/{total_user_rows_to_process if SAMPLE_SIZE_USERS == 0 else SAMPLE_SIZE_USERS})...")
-        response_text = get_gemini_response(prompt_capabilities)
-        df_users.at[index, 'gemini_supplier_capability_summary'] = response_text
-        made_api_call = True
-
-    if made_api_call:
-        processed_count_users += 1
-        # O delay já está dentro de get_gemini_response
-
-df_users.to_csv('user_details_enriched.csv', index=False, encoding='utf-8-sig')
-print(f"\nuser_details_enriched.csv saved successfully! Processed {processed_count_users} user rows with Gemini.")
-
-
-# --- Processar marketing_interactions.csv (Exemplo: Análise de RFQs) ---
-print("\nProcessando marketing_interactions.csv...")
-try:
     df_interactions = pd.read_csv('marketing_interactions.csv')
-except FileNotFoundError:
-    print("Erro: marketing_interactions.csv não encontrado. Execute thomas_data.py primeiro.")
+except FileNotFoundError as e:
+    print(f"Error: CSV file not found. {e}. Please run thomas_data.py first.")
     exit()
 
-df_interactions['gemini_rfq_analysis'] = "{}" # Inicializa com JSON vazio
+# Initialize new columns
+df_users['vader_sentiment_analysis_json'] = "{}" # For VADER results
+if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+    df_users['gemini_supplier_capability_summary_json'] = "{}"
+    df_interactions['gemini_rfq_analysis_json'] = "{}"
+else: # Create empty columns if Gemini is disabled, to prevent errors if Power BI expects them
+    df_users['gemini_supplier_capability_summary_json'] = "{}"
+    df_interactions['gemini_rfq_analysis_json'] = "{}"
 
-SAMPLE_SIZE_INTERACTIONS = 0 # Define como 0 para processar todas as linhas elegíveis
-processed_count_interactions = 0
-total_interaction_rows_to_process = len(df_interactions[(df_interactions['event_name'] == 'RFQ Submitted') &
-                                                        (df_interactions['interaction_details_text'].notna())])
-print(f"Total de interações RFQ elegíveis para processamento com Gemini: {total_interaction_rows_to_process}")
+
+# --- Define Slices/Batches for Processing ---
+BATCH_SIZE = 50 # Process N eligible items from each category per round. Increased because VADER is fast.
+
+user_feedback_indices = df_users[df_users['user_feedback_text'].notna()].index.tolist()
+supplier_capability_indices = df_users[
+    df_users['supplier_capabilities_text'].notna() & (df_users['user_type'] == 'Supplier')
+].index.tolist()
+rfq_interaction_indices = df_interactions[
+    (df_interactions['event_name'] == 'RFQ Submitted') & (df_interactions['interaction_details_text'].notna())
+].index.tolist()
+
+ptr_feedback, ptr_capability, ptr_rfq = 0, 0, 0
+processed_total_api_calls = 0 # For Gemini calls if any
+processed_total_vader_analyses = 0
+
+print(f"Starting round-robin processing with BATCH_SIZE = {BATCH_SIZE}")
+print(f"Eligible for User Feedback (VADER): {len(user_feedback_indices)}")
+if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+    print(f"Eligible for Supplier Capability (Gemini): {len(supplier_capability_indices)}")
+    print(f"Eligible for RFQ Interaction (Gemini): {len(rfq_interaction_indices)}")
+
+# --- Round-Robin Processing Loop ---
+while True:
+    items_processed_this_round = 0
+
+    # 1. Process User Feedback with VADER
+    batch_end_feedback = min(ptr_feedback + BATCH_SIZE, len(user_feedback_indices))
+    for i in range(ptr_feedback, batch_end_feedback):
+        idx = user_feedback_indices[i]
+        row = df_users.loc[idx]
+        # print(f"Analyzing User Feedback (VADER): user_id {row['user_id']} (Item {ptr_feedback + 1}/{len(user_feedback_indices)})")
+        vader_result = get_vader_sentiment_analysis(row['user_feedback_text'])
+        df_users.at[idx, 'vader_sentiment_analysis_json'] = json.dumps(vader_result)
+        items_processed_this_round += 1
+        processed_total_vader_analyses +=1
+    ptr_feedback = batch_end_feedback
+    if ptr_feedback % (BATCH_SIZE * 5) == 0 and ptr_feedback > 0 : # Print progress every N batches
+        print(f"VADER: Processed {ptr_feedback}/{len(user_feedback_indices)} user feedbacks.")
 
 
-for index, row in df_interactions.iterrows():
-    if SAMPLE_SIZE_INTERACTIONS > 0 and processed_count_interactions >= SAMPLE_SIZE_INTERACTIONS:
-        print(f"Atingido o limite de amostra de {SAMPLE_SIZE_INTERACTIONS} para interações RFQ. Interrompendo processamento de interações.")
+    if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+        # 2. Process Supplier Capabilities with Gemini
+        batch_end_capability = min(ptr_capability + BATCH_SIZE, len(supplier_capability_indices))
+        for i in range(ptr_capability, batch_end_capability):
+            idx = supplier_capability_indices[i]
+            row = df_users.loc[idx]
+            print(f"\nAnalyzing Supplier Capabilities (Gemini): user_id {row['user_id']} (Item {ptr_capability + 1}/{len(supplier_capability_indices)})")
+            prompt_capabilities = f"""
+            Based on the following list of supplier capabilities, generate a concise summary (1-2 sentences)
+            and identify up to 3 main service categories offered.
+            Provide the response ONLY as a valid JSON object.
+            The JSON object must have: "capability_summary" (string) and "main_categories" (list of strings).
+            Supplier capabilities: "{row['supplier_capabilities_text']}"
+            Respond strictly in English.
+            """
+            response_text = get_gemini_response_with_delay(prompt_capabilities)
+            df_users.at[idx, 'gemini_supplier_capability_summary_json'] = response_text
+            items_processed_this_round += 1
+            processed_total_api_calls +=1
+        ptr_capability = batch_end_capability
+
+        # 3. Process RFQ Interactions with Gemini
+        batch_end_rfq = min(ptr_rfq + BATCH_SIZE, len(rfq_interaction_indices))
+        for i in range(ptr_rfq, batch_end_rfq):
+            idx = rfq_interaction_indices[i]
+            row = df_interactions.loc[idx]
+            print(f"\nAnalyzing RFQ Interaction (Gemini): interaction_id {row['interaction_id']} (Item {ptr_rfq + 1}/{len(rfq_interaction_indices)})")
+            prompt_rfq = f"""
+            Analyze the RFQ text.
+            1. Identify main service/product.
+            2. Assess implied urgency: 'High', 'Medium', 'Low', or 'Not specified'.
+               - 'High' examples: "ASAP", "urgent", "tight deadline".
+               - 'Medium' examples: "soon", "standard lead time".
+               - 'Low' examples: "budgetary", "exploring options".
+            3. Extract up to 5 key specifications.
+            Provide response ONLY as a valid JSON object with keys: "service_product_type", "implied_urgency", "key_specifications" (list of strings).
+            RFQ text: "{row['interaction_details_text']}"
+            Respond strictly in English.
+            """
+            response_text = get_gemini_response_with_delay(prompt_rfq)
+            df_interactions.at[idx, 'gemini_rfq_analysis_json'] = response_text
+            items_processed_this_round += 1
+            processed_total_api_calls +=1
+        ptr_rfq = batch_end_rfq
+
+    # Check if all processing is done
+    all_feedback_done = ptr_feedback >= len(user_feedback_indices)
+    all_capabilities_done = not USE_GEMINI_FOR_RFQ_AND_CAPABILITIES or ptr_capability >= len(supplier_capability_indices)
+    all_rfqs_done = not USE_GEMINI_FOR_RFQ_AND_CAPABILITIES or ptr_rfq >= len(rfq_interaction_indices)
+
+    if all_feedback_done and all_capabilities_done and all_rfqs_done:
+        print("\nAll eligible items processed.")
         break
+    elif items_processed_this_round == 0 and (not all_feedback_done or not all_capabilities_done or not all_rfqs_done):
+        # This case handles if one list finishes much earlier than others in a round
+        # and no items were processed from the remaining lists in that specific partial batch.
+        # We continue to ensure other lists get a chance.
+        # A items_processed_this_round == 0 check AFTER all processing attempts in a full cycle
+        # (like the one originally there) is a more robust stop for "nothing left at all".
+        # For now, the combined condition above should be sufficient.
+        print(f"\n--- End of Round --- Processed {processed_total_vader_analyses} VADER analyses. Processed {processed_total_api_calls} Gemini API calls. ---")
 
-    if row['event_name'] == 'RFQ Submitted' and pd.notna(row['interaction_details_text']):
-        prompt_rfq = f"""
-        Analyze the following Request for Quotation (RFQ) text.
-        Identify the main type of service or product requested.
-        Assess the implied urgency (if any) as 'Low', 'Medium', or 'High', or 'Not specified'.
-        Extract any key specifications mentioned (e.g., material, quantity, dimensions).
-        Provide the response ONLY as a valid JSON object, with no additional text or Markdown formatting before or after.
-        The JSON object must have the following structure:
-        {{
-          "service_product_type": "YourAnalysisHere",
-          "implied_urgency": "Low/Medium/High/Not specified",
-          "key_specifications": ["spec1", "spec2"]
-        }}
 
-        RFQ text: "{row['interaction_details_text']}"
-
-        Respond in English.
-        """
-        print(f"\nAnalyzing RFQ interaction_id: {row['interaction_id']} (Interaction {processed_count_interactions + 1}/{total_interaction_rows_to_process if SAMPLE_SIZE_INTERACTIONS == 0 else SAMPLE_SIZE_INTERACTIONS})...")
-        response_text = get_gemini_response(prompt_rfq)
-        df_interactions.at[index, 'gemini_rfq_analysis'] = response_text
-        processed_count_interactions += 1
-        # O delay já está dentro de get_gemini_response
+# --- Save Final DataFrames ---
+df_users.to_csv('user_details_enriched.csv', index=False, encoding='utf-8-sig')
+print(f"\nuser_details_enriched.csv saved successfully. VADER analyses: {processed_total_vader_analyses}.")
+if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+    print(f"Gemini supplier capability analyses: {ptr_capability}.")
 
 
 df_interactions.to_csv('marketing_interactions_enriched.csv', index=False, encoding='utf-8-sig')
-print(f"\nmarketing_interactions_enriched.csv saved successfully! Processed {processed_count_interactions} RFQ interactions with Gemini.")
+if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+    print(f"marketing_interactions_enriched.csv saved successfully. Gemini RFQ analyses: {ptr_rfq}.")
+else:
+    print(f"marketing_interactions_enriched.csv saved (no Gemini RFQ analysis performed).")
 
-print("\nProcessing with Gemini completed!")
+
+print(f"\nTotal VADER analyses performed: {processed_total_vader_analyses}")
+if USE_GEMINI_FOR_RFQ_AND_CAPABILITIES:
+    print(f"Total Gemini API calls made (approx): {processed_total_api_calls}")
+print("Enrichment process completed!")

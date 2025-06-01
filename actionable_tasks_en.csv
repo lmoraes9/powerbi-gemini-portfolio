@@ -1,0 +1,4 @@
+﻿task_id,task_description,task_importance
+TASK001,"Analyze RFQ Conversion Rate Drivers: Conduct a deep dive into the factors contributing to the 100% RFQ conversion rate. Identify specific sales techniques, lead qualification processes, or product/service offerings that are driving this success and document them for replication.",4
+TASK002,"Supplier Diversification Assessment: Evaluate the risk associated with the heavy reliance on 'Global Sourcing' and 'Distribution' suppliers. Identify potential alternative sourcing options and develop a phased plan for diversifying the supplier base, prioritizing resilience and cost optimization.",5
+TASK003,Negative Feedback Root Cause Analysis: Investigate the 10% negative customer sentiment. Implement a system for systematically collecting and categorizing negative feedback to identify recurring issues related to service delivery or product quality and develop targeted improvement plans.,3
