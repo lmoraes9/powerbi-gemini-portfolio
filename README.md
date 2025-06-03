@@ -12,7 +12,7 @@ This portfolio project demonstrates a comprehensive, end-to-end business intelli
 *   **Near Real-Time Data Acquisition (Web Scraping Context):** Incorporating commodity price data (e.g., steel, aluminum, oil) sourced from public web data (via `yfinance` library, simulating a web scraping or API data feed). This adds a layer of external market context to the internal business data, enabling analysis of potential correlations and impacts.
 *   **Data Storytelling & Dashboard Design (Power BI):** Culminating in a meticulously designed Power BI dashboard that not only visualizes data but also tells a compelling story, guiding the user through key performance indicators, user funnels, sentiment trends, and market-driven insights. Emphasis is placed on clear communication, intuitive navigation, and actionable visual outputs.
 
-**Disclaimer:** The data presented is entirely **mock data**, programmatically generated for demonstration and skill-showcasing purposes. It does **not** represent real data, operational metrics, or performance of Thomasnet (A Xometry Company). The company logo is used for illustrative context only. This project serves as a preview of technical skills in integrating Power BI with advanced AI models like Gemini for enhanced data storytelling.
+* **Disclaimer:** The data presented is entirely **mock data**, programmatically generated for demonstration and skill-showcasing purposes. It does **not** represent real data, operational metrics, or performance of Thomasnet (A Xometry Company). The company logo is used for illustrative context only. This project serves as a preview of technical skills in integrating Power BI with advanced AI models like Gemini for enhanced data storytelling.
 ---
 
 ## Table of Contents
